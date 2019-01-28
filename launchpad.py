@@ -1,9 +1,16 @@
 import mido
 import time
+import signal
 
 FONT = {}
+AVAILABLE_COLORS = [ 'red', 'green', 'amber', 'orange', 'none' ]
 COLORS = {
     "x": "red",
+
+    "r": "red",
+    "g": "green",
+    "a": "amber",
+    "o": "orange",
     ".": "none",
 }
 
@@ -64,6 +71,9 @@ def generateDisplayFromFile(file):
             COLORS[config[0]] = config[1]
     return display
 
+def getLengthOfDisplay(display):
+    return len (display[0])
+
 # combine font characters into a display from a string
 def renderFont(text):
     display = ['', '', '', '', '', '', '', '']
@@ -107,7 +117,6 @@ def unloadDisplay(port):
         for x in range(0, 8):
             port.send(tile("note_off", x, y))
 
-
 ########### SETUP ############
             
 # Get the launchpad device no matter which port its plugged in
@@ -123,4 +132,14 @@ if device_name == False:
 port = mido.open_output(device_name)
 
 initFont("characters.txt")
+
+
+# https://keyboardinterrupt.org/catching-a-keyboardinterrupt-signal/?doing_wp_cron=1548654812.1566979885101318359375
+#def keyboardInterruptHandler(signal, frame):
+#    unloadDisplay(port)
+#    port.close()
+    
+#signal.signal(signal.SIGINT, keyboardInterruptHandler)
+
+
         
