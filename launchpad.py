@@ -1,46 +1,12 @@
 import mido
 import time
 
+FONT = {}
 COLORS = {
     "x": "red",
     ".": "none",
 }
 
-FONT = {}
-
-# create the font text
-def initFont(file):
-    file = open(file)
-
-    i = 0
-    for line in file.readlines():
-        line = line.rstrip()
-
-        if i % 9 == 0:
-            # if a character is not detected
-            if len(line) != 1:
-                break
-            char = line
-            char_display = []            
-            # print ("char: ", line)
-        else:
-            char_display.append(line)
-            FONT[char] = char_display
-            # print (line)
-        i += 1
-
-def renderFont(text):
-    display = ['', '', '', '', '', '', '', '']
-    for char in text:
-        if char in FONT:
-            char = FONT[char]
-        else:
-            char = FONT["!"]
-            
-        for x in range(0, 8):
-            display[x] = display[x] + char[x]
-
-    return display
 
 def getNoteFromLaunchpadXY(x, y):
     return x + y * 16
@@ -62,24 +28,56 @@ def tile(action, x, y, color=''):
     velocity = getVelocityFromLaunchpadColor(color)
     return mido.Message(action, note=note, velocity=velocity)
 
-def initDisplay(file):
+
+# create the font text
+def initFont(file):
     file = open(file)
 
-    print(COLORS)
+    i = 0
+    for line in file.readlines():
+        line = line.rstrip('\n')
+
+        if i % 9 == 0:
+            # if a character is not detected
+            if len(line) != 1:
+                break
+            char = line
+            char_display = []            
+            # print ("char: ", line)
+        else:
+            char_display.append(line)
+            FONT[char] = char_display
+            # print (line)
+        i += 1
+
+# return an array of the display from a file
+def generateDisplayFromFile(file):
+    file = open(file)
 
     display = []
     for line in file.readlines():
         line = line.rstrip()
         if len(display) < 8:
-            print(line)
             display.append(line)
         else:
             config = line.split(' ')
-            print (config)
             COLORS[config[0]] = config[1]
-    print (COLORS)
     return display
+
+# combine font characters into a display from a string
+def renderFont(text):
+    display = ['', '', '', '', '', '', '', '']
+    for char in text:
+        if char in FONT:
+            char = FONT[char]
+        # if the character doesn't exist, use !
+        else:
+            char = FONT["!"]
             
+        for x in range(0, 8):
+            display[x] = display[x] + char[x]
+
+    return display
 
 def renderFrame(port, display, position):
 
@@ -89,7 +87,7 @@ def renderFrame(port, display, position):
         line = line + line
         frame.append(line[position:position+8])
 
-#    print(frame)
+    # print(frame)
     
     x = 0
     y = 0
@@ -109,8 +107,9 @@ def unloadDisplay(port):
         for x in range(0, 8):
             port.send(tile("note_off", x, y))
 
-###### MAIN #####
 
+########### SETUP ############
+            
 # Get the launchpad device no matter which port its plugged in
 device_name = False
 for device in mido.get_output_names():
@@ -124,18 +123,4 @@ if device_name == False:
 port = mido.open_output(device_name)
 
 initFont("characters.txt")
-display = renderFont("abcdefghijklmnopqrstuvwxyz")
-
-# display = initDisplay("b0sh.txt")
-
-# main loop
-position = 0
-while (1):
-    renderFrame(port, display, position)
-    position += 1
-    time.sleep(0.25)
-
-time.sleep(2)
-unloadDisplay(port)
-
-port.close()
+        
