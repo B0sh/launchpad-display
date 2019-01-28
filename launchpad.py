@@ -105,13 +105,15 @@ def renderFrame(port, display, position):
         for x in range (0, 8):
             
             if line[x] in COLORS:
-                
-                port.send(tile("note_on", x, y, COLORS[line[x]]))
+                on(x, y, COLORS[line[x]])
             else:
                 port.send(tile("note_off", x, y, "amber"))
 
         y += 1
 
+def on(x, y, color):
+    port.send(tile("note_on", x, y, color))
+    
 def unloadDisplay(port):
     for y in range (0, 8):
         for x in range(0, 8):
