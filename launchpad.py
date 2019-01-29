@@ -1,12 +1,12 @@
 import mido
 import time
 import signal
+import random
 
 FONT = {}
 AVAILABLE_COLORS = [ 'red', 'green', 'amber', 'orange', 'none' ]
 COLORS = {
     "x": "red",
-
     "r": "red",
     "g": "green",
     "a": "amber",
@@ -14,7 +14,25 @@ COLORS = {
     ".": "none",
 }
 
+def generateNextColors():
+    while True:
+        random.shuffle(AVAILABLE_COLORS)
+        background = AVAILABLE_COLORS[0]
+        text = AVAILABLE_COLORS[1]
+        if background == "amber" and text == "orange":
+            continue
+        elif background == "orange" and text == "amber":
+            continue
+        elif background == COLORS['.']:
+            continue
+        #elif text == COLORS['x']:
+        #    continue
+        else:
+            break
 
+    COLORS['x'] = text
+    COLORS['.'] = background
+    
 def getNoteFromLaunchpadXY(x, y):
     return x + y * 16
 
@@ -134,7 +152,7 @@ if device_name == False:
 port = mido.open_output(device_name)
 
 initFont("characters.txt")
-
+# print (FONT)
 
 # https://keyboardinterrupt.org/catching-a-keyboardinterrupt-signal/?doing_wp_cron=1548654812.1566979885101318359375
 #def keyboardInterruptHandler(signal, frame):

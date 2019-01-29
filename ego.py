@@ -1,7 +1,7 @@
 from launchpad import *
 from transition import *
-import random
 import math
+import datetime
 
 DELAY = 0.10
 
@@ -9,15 +9,11 @@ DELAY = 0.10
 # main loop
 while (1):
 
-    # TODO: Break off as function
-    # Remove possibilty for amber on orange
-    random.shuffle(AVAILABLE_COLORS)
-    COLORS['x'] = AVAILABLE_COLORS[0]
-    COLORS['.'] = AVAILABLE_COLORS[1]
-
+    generateNextColors()
 
     transition_matrix = getRandomTransition()
-    
+
+    print (rotateTransitionMatrix(1, transition_matrix)    )
     # convert transition matrix to sequential tile operations
     tiles = list(range(0, 64))
     for index, value in enumerate(transition_matrix):
@@ -32,7 +28,8 @@ while (1):
 
 
     # walden display
-    display = renderFont("  Walden's World  ")
+    # Display = renderFont("  Walden's World  ")
+    display = renderFont("  B0sh_  ")
     position = 0
     while (position != getLengthOfDisplay(display) - 8):
         renderFrame(port, display, position)
