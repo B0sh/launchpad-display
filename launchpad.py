@@ -13,25 +13,6 @@ COLORS = {
     "o": "orange",
     ".": "none",
 }
-
-def generateNextColors():
-    while True:
-        random.shuffle(AVAILABLE_COLORS)
-        background = AVAILABLE_COLORS[0]
-        text = AVAILABLE_COLORS[1]
-        if background == "amber" and text == "orange":
-            continue
-        elif background == "orange" and text == "amber":
-            continue
-        elif background == COLORS['.']:
-            continue
-        #elif text == COLORS['x']:
-        #    continue
-        else:
-            break
-
-    COLORS['x'] = text
-    COLORS['.'] = background
     
 def getNoteFromLaunchpadXY(x, y):
     return x + y * 16
@@ -53,6 +34,16 @@ def tile(action, x, y, color=''):
     velocity = getVelocityFromLaunchpadColor(color)
     return mido.Message(action, note=note, velocity=velocity)
 
+def on(x, y, color):
+    port.send(tile("note_on", x, y, color))
+    
+def off(x, y):
+    port.send(tile("note_off", x, y))
+    
+def unloadDisplay(port):
+    for y in range (0, 8):
+        for x in range(0, 8):
+            port.send(tile("note_off", x, y))
 
 # create the font text
 def initFont(file):
@@ -92,9 +83,29 @@ def generateDisplayFromFile(file):
 def getLengthOfDisplay(display):
     return len (display[0])
 
+# generate the next set of random colors according to a set of rules
+def generateNextColors():
+    while True:
+        random.shuffle(AVAILABLE_COLORS)
+        background = AVAILABLE_COLORS[0]
+        text = AVAILABLE_COLORS[1]
+        if background == "amber" and text == "orange":
+            continue
+        elif background == "orange" and text == "amber":
+            continue
+        elif background == COLORS['.']:
+            continue
+        #elif text == COLORS['x']:
+        #    continue
+        else:
+            break
+
+    COLORS['x'] = text
+    COLORS['.'] = background
+    
 # combine font characters into a display from a string
 def renderFont(text):
-    display = ['', '', '', '', '', '', '', '']
+    display = [''] * 8
     for char in text:
         if char in FONT:
             char = FONT[char]
@@ -107,35 +118,20 @@ def renderFont(text):
 
     return display
 
+# send the signals to render a given display frame
 def renderFrame(port, display, position):
-
     frame = []
     for line in display:
         position = position % len(line) 
         line = line + line
         frame.append(line[position:position+8])
-
-    # print(frame)
     
-    x = 0
-    y = 0
-    for line in frame:
+    for y in range (0, 8):
         for x in range (0, 8):
-            
             if line[x] in COLORS:
                 on(x, y, COLORS[line[x]])
             else:
-                port.send(tile("note_off", x, y, "amber"))
-
-        y += 1
-
-def on(x, y, color):
-    port.send(tile("note_on", x, y, color))
-    
-def unloadDisplay(port):
-    for y in range (0, 8):
-        for x in range(0, 8):
-            port.send(tile("note_off", x, y))
+                off(x, y)
 
 ########### SETUP ############
             
@@ -150,9 +146,7 @@ if device_name == False:
     exit()
 
 port = mido.open_output(device_name)
-
 initFont("characters.txt")
-# print (FONT)
 
 # https://keyboardinterrupt.org/catching-a-keyboardinterrupt-signal/?doing_wp_cron=1548654812.1566979885101318359375
 #def keyboardInterruptHandler(signal, frame):
