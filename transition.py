@@ -1,5 +1,6 @@
 import random
 import math
+import numpy
 
 TRANSITIONS = {
     "hilberts_curve": [
@@ -63,26 +64,30 @@ TRANSITIONS = {
 def getRandomTransition():
     transition_name = random.choice(list(TRANSITIONS.keys()))
 
+    # randomly generate a transition matrix
     if transition_name == "random":
         matrix = list(range(0, 64))
         random.shuffle(matrix)
         return matrix
     else:
-        return TRANSITIONS[transition_name]
+        matrix = TRANSITIONS[transition_name]
+        # apply a random rotation
+        matrix = rotateTransitionMatrix(matrix, random.randint(0, 3))
+        return matrix
+        
 
 # based on
 # https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-python
 def rotateTransitionMatrix(times, matrix):
-    matrix_2d = [ [], [], [], [], [], [], [], [] ]
-    for index, value in enumerate(matrix):
-        x = index % 8
-        y = math.floor(index / 8)
-        matrix_2d[y].append( value )
-
-    rotated = list(zip(*matrix_2d[::-1]))
+    if times == 0:
+        return matrix
+    # convert to 2d matrix
+    matrix = numpy.array(matrix).reshape(8, 8)
+    # rotation of the matrix
+    matrix = np.rot90(matrix)
+    # convert back to 1d array
+    matrix = matrix.flatten()
+    # return a normal python array
+    return list(matrix)
     
-    print (matrix_2d)
-    print (rotated)
-        
     
-
