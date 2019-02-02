@@ -81,7 +81,6 @@ def getRandomTransition():
 def rotateTransitionMatrix(matrix, times):
     if times == 0:
         return matrix
-    print (matrix, times)
     
     # convert to 2d matrix
     matrix = numpy.array(matrix).reshape(8, 8)
@@ -91,8 +90,6 @@ def rotateTransitionMatrix(matrix, times):
     # convert back to 1d array
     matrix = matrix.flatten()
     # return a normal python array
-    
-    print (list(matrix), times)
     return list(matrix)
     
     

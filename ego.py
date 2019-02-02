@@ -3,10 +3,11 @@ from transition import *
 import math
 import datetime
 
-DELAY = 0.20
+DELAY = 0.15
 
 
 # main loop
+main_loops = 0
 while (1):
 
     generateNextColors()
@@ -26,29 +27,20 @@ while (1):
         time.sleep(DELAY / 3)
 
 
-    # walden display
-    # Display = renderFont("  Walden's World  ")
-    display = renderFont("B0sh_  ")
-    
- #   today = datetime.datetime.today().strftime('%A, %B %d  %I:%M %p')
- #   display = renderFont("  " + today + "  ")
-
-
+    # text display
+    x = main_loops % 2
+    if x == 0:
+        display = renderFont("  Walden's World  b0sh_  ")
+    elif x == 1:
+        today = datetime.datetime.today().strftime('%A, %B %d  %I:%M %p')
+        display = renderFont("  " + today + "  ")
+         
     position = 0
     while (position != getLengthOfDisplay(display) - 8):
         rapidRenderFrame(display, position)
         position += 1
         time.sleep(DELAY)
 
-#    # b0sh display
-#    display = renderFont("  b0sh_  ")
-#    position = 0
-#    while (position != getLengthOfDisplay(display) - 8):
-#        renderFrame(display, position)
-#        position += 1
-#        time.sleep(DELAY)
 
 
-
-
-
+    main_loops += 1

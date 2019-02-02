@@ -162,8 +162,6 @@ def rapidRenderFrame (display, position):
                 
                 message = mido.Message("note_on", note=color1, velocity=color2, channel=2)
                 port.send(message)
-                
-                # print ( color1, color2, message)
     
                 last_color = -1
     
