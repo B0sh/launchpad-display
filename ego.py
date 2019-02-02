@@ -3,7 +3,7 @@ from transition import *
 import math
 import datetime
 
-DELAY = 0.10
+DELAY = 0.20
 
 
 # main loop
@@ -28,23 +28,23 @@ while (1):
 
     # walden display
     # Display = renderFont("  Walden's World  ")
-  #  display = renderFont("  B0sh_  ")
+    display = renderFont("B0sh_  ")
     
  #   today = datetime.datetime.today().strftime('%A, %B %d  %I:%M %p')
  #   display = renderFont("  " + today + "  ")
 
 
-#    position = 0
-#    while (position != getLengthOfDisplay(display) - 8):
-#        renderFrame(port, display, position)
-#        position += 1
-#        time.sleep(DELAY)
+    position = 0
+    while (position != getLengthOfDisplay(display) - 8):
+        rapidRenderFrame(display, position)
+        position += 1
+        time.sleep(DELAY)
 
 #    # b0sh display
 #    display = renderFont("  b0sh_  ")
 #    position = 0
 #    while (position != getLengthOfDisplay(display) - 8):
-#        renderFrame(port, display, position)
+#        renderFrame(display, position)
 #        position += 1
 #        time.sleep(DELAY)
 

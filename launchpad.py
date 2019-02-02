@@ -40,11 +40,11 @@ def on(x, y, color):
 def off(x, y):
     port.send(tile("note_off", x, y))
     
-def unloadDisplay(port):
-    for y in range (0, 8):
-        for x in range(0, 8):
-            port.send(tile("note_off", x, y))
-
+def unloadDisplay():
+    # create a 2d array of 8x8 dots
+    display = [ ['.']*8 ]*10
+    rapidRenderFrame(display, 0)
+    
 # create the font text
 def initFont(file):
     file = open(file)
@@ -119,19 +119,54 @@ def renderFont(text):
     return display
 
 # send the signals to render a given display frame
-def renderFrame(port, display, position):
+def renderFrame(display, position):
     frame = []
     for line in display:
         position = position % len(line) 
         line = line + line
         frame.append(line[position:position+8])
-    
-    for y in range (0, 8):
+
+    y = 0
+    for line in frame:
         for x in range (0, 8):
             if line[x] in COLORS:
                 on(x, y, COLORS[line[x]])
             else:
                 off(x, y)
+        y += 1
+
+# use the launchpad's Rapid LED Update mode
+def rapidRenderFrame (display, position):
+    frame = []
+    for line in display:
+        position = position % len(line) 
+        line = line + line
+        frame.append(line[position:position+8])
+
+    # send a dummy signal on channel 1 to reset midi position
+    off(15, 7)
+
+    last_color = -1
+    for line in frame:
+        for x in range (0, 8):
+            if line[x] in COLORS:
+                c = COLORS[line[x]]
+            else:
+                c = COLORS['none']
+
+            if last_color == -1:
+                last_color = c
+            else:
+                color1 = getVelocityFromLaunchpadColor(last_color)
+                color2 = getVelocityFromLaunchpadColor(c)
+                
+                message = mido.Message("note_on", note=color1, velocity=color2, channel=2)
+                port.send(message)
+                
+                # print ( color1, color2, message)
+    
+                last_color = -1
+    
 
 ########### SETUP ############
             
@@ -147,6 +182,8 @@ if device_name == False:
 
 port = mido.open_output(device_name)
 initFont("characters.txt")
+
+unloadDisplay()
 
 # https://keyboardinterrupt.org/catching-a-keyboardinterrupt-signal/?doing_wp_cron=1548654812.1566979885101318359375
 #def keyboardInterruptHandler(signal, frame):
