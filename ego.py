@@ -13,7 +13,6 @@ while (1):
 
     transition_matrix = getRandomTransition()
 
-    print (rotateTransitionMatrix(1, transition_matrix)    )
     # convert transition matrix to sequential tile operations
     tiles = list(range(0, 64))
     for index, value in enumerate(transition_matrix):
@@ -29,12 +28,17 @@ while (1):
 
     # walden display
     # Display = renderFont("  Walden's World  ")
-    display = renderFont("  B0sh_  ")
-    position = 0
-    while (position != getLengthOfDisplay(display) - 8):
-        renderFrame(port, display, position)
-        position += 1
-        time.sleep(DELAY)
+  #  display = renderFont("  B0sh_  ")
+    
+ #   today = datetime.datetime.today().strftime('%A, %B %d  %I:%M %p')
+ #   display = renderFont("  " + today + "  ")
+
+
+#    position = 0
+#    while (position != getLengthOfDisplay(display) - 8):
+#        renderFrame(port, display, position)
+#        position += 1
+#        time.sleep(DELAY)
 
 #    # b0sh display
 #    display = renderFont("  b0sh_  ")

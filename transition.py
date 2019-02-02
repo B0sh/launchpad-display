@@ -78,16 +78,21 @@ def getRandomTransition():
 
 # based on
 # https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-python
-def rotateTransitionMatrix(times, matrix):
+def rotateTransitionMatrix(matrix, times):
     if times == 0:
         return matrix
+    print (matrix, times)
+    
     # convert to 2d matrix
     matrix = numpy.array(matrix).reshape(8, 8)
     # rotation of the matrix
-    matrix = np.rot90(matrix)
+    for x in range (0, times):
+        matrix = numpy.rot90(matrix)
     # convert back to 1d array
     matrix = matrix.flatten()
     # return a normal python array
+    
+    print (list(matrix), times)
     return list(matrix)
     
     
