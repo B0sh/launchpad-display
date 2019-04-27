@@ -64,16 +64,36 @@ TRANSITIONS = {
 def getRandomTransition():
     transition_name = random.choice(list(TRANSITIONS.keys()))
 
+    colors = getRandomColors()
+
     # randomly generate a transition matrix
     if transition_name == "random":
         matrix = list(range(0, 64))
         random.shuffle(matrix)
-        return matrix
     else:
         matrix = TRANSITIONS[transition_name]
         # apply a random rotation
         matrix = rotateTransitionMatrix(matrix, random.randint(0, 3))
-        return matrix
+    
+    return {
+        "matrix": matrix,
+        "colors": colors
+    }
+
+def getRandomColors():
+    r = random.randint(0, 20)
+
+    if r == 9:
+        c = []
+        for i in range(0, 64):
+            c.append(i)
+        return c
+    if r == 8:
+        c = []
+        for i in range(0, 64):
+            c.append(random.randint(0, 64))
+        return c
+    return [ "." ] * 64
 
 
 # based on

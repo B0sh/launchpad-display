@@ -26,8 +26,12 @@ def getNoteFromLaunchpadXY(x, y):
 
 def getVelocityFromLaunchpadColor(color):
     color = str(color)
+
     if color.isdigit():
         return int(color)
+
+    if color in COLORS:
+        color = COLORS[color]
     
     if color == "red":
         return 15  # 0b00000011

@@ -8,23 +8,24 @@ DELAY = 0.15
 
 # main loop
 main_loops = 0
-while (1):
+while True:
 
     generateNextColors()
 
-    transition_matrix = getRandomTransition()
+    transition = getRandomTransition()
 
     # convert transition matrix to sequential tile operations
     tiles = list(range(0, 64))
-    for index, value in enumerate(transition_matrix):
+    for index, value in enumerate(transition['matrix']):
         tiles[value-1] = index
     
     while (len(tiles) != 0):
         x = tiles[0] % 8
         y = math.floor(tiles[0] / 8)
-        on(x, y, COLORS['.'])
+        on(x, y, transition['colors'][len(tiles)-1])
         del tiles[0]
         time.sleep(DELAY / 3)
+        
 
 
     # text display
