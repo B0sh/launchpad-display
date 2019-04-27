@@ -74,14 +74,14 @@ def getRandomTransition():
         # apply a random rotation
         matrix = rotateTransitionMatrix(matrix, random.randint(0, 3))
         return matrix
-        
+
 
 # based on
 # https://stackoverflow.com/questions/8421337/rotating-a-two-dimensional-array-in-python
 def rotateTransitionMatrix(matrix, times):
     if times == 0:
         return matrix
-    
+
     # convert to 2d matrix
     matrix = numpy.array(matrix).reshape(8, 8)
     # rotation of the matrix
@@ -91,5 +91,5 @@ def rotateTransitionMatrix(matrix, times):
     matrix = matrix.flatten()
     # return a normal python array
     return list(matrix)
-    
-    
+
+
