@@ -77,6 +77,22 @@ def off(x, y):
 
 
 def unloadDisplay():
+    global COLORS
+    COLORS = {
+        "x": "red",
+        "r": "red",
+        "e": "orangered",
+        "g": "green",
+        "n": "dimgreen",
+        "a": "amber",
+        "o": "orange",
+        "d": "dimorange",
+        "y": "yellow",
+        "l": "lime",
+        ".": "none",
+    }
+
+
     # create a 2d array of 8x8 dots
     display = [['.'] * 8] * 10
     rapidRenderFrame(display, 0)
