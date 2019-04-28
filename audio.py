@@ -12,6 +12,11 @@ from transition import *
 
 class LaunchpadAudio:
     def __init__(self):
+
+        # https://stackoverflow.com/questions/21610198/runtimewarning-divide-by-zero-encountered-in-log
+        # Disable divide by zero errors
+        numpy.seterr(divide = 'ignore') 
+
         self.RATE = 44100
         self.BUFFER = 1524
 
@@ -59,14 +64,11 @@ class LaunchpadAudio:
             pass
 
         # its possible to get zero result when audio disabled, so just skip processing
-        try: 
-            data = numpy.log10(
-                numpy.sqrt(
-                    numpy.real(data)**2+numpy.imag(data)**2
-                ) / self.BUFFER
-            ) * 20
-        except ZeroDivisionError:
-            pass
+        data = numpy.log10(
+            numpy.sqrt(
+                numpy.real(data)**2+numpy.imag(data)**2
+            ) / self.BUFFER
+        ) * 20
         
         # init table
         table = [""] * 8
@@ -85,3 +87,5 @@ class LaunchpadAudio:
         # render frame with launchpad as fast as possible
         rapidRenderFrame(table, 0)
         
+    def finished(self):
+        return False

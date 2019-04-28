@@ -46,3 +46,6 @@ class TextScroll:
             rapidRenderFrame(self.display, self.position)
             self.position += 1
             time.sleep(self.delay)
+
+    def finished(self):
+        return False

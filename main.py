@@ -6,6 +6,8 @@ import threading
 import sys
 import random
 import queue
+import twitch
+from twitchscroll import * 
 
 # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch09s07.html
 class GUI:
@@ -16,17 +18,20 @@ class GUI:
         master.protocol('WM_DELETE_WINDOW', client.endApplication)
 
         title_label = tk.Label(text="Launchpad Control Panel", fg="#F0E0D0", bg="#0F0020", font=("Helvetica", 16))
-        title_label.pack(padx=10, pady=10)
+        title_label.pack(padx=10, pady=8)
 
         # init GUI
-        text_button = tk.Button(master, text='Text Scroll', width=25, command=client.set_text_scroll, padx=4, pady=4)
-        text_button.pack(padx=10, pady=10)
+        text_button = tk.Button(master, text='Text Scroll', width=25, command=client.set_text_scroll, padx=3, pady=3)
+        text_button.pack(padx=10, pady=8)
 
-        audio_button = tk.Button(master, text='Audio Spectrogram', width=25, command=client.set_audio, padx=4, pady=4)
-        audio_button.pack(padx=10, pady=10)
+        audio_button = tk.Button(master, text='Audio Spectrogram', width=25, command=client.set_audio, padx=3, pady=3)
+        audio_button.pack(padx=10, pady=8)
 
-        stop_button = tk.Button(master, text='Clear', width=25, command=client.stop_launchpad, padx=4, pady=4)
-        stop_button.pack(padx=10, pady=10)
+        twitch_button = tk.Button(master, text='Start Twitch', width=25, command=client.start_twitch, padx=3, pady=3)
+        twitch_button.pack(padx=10, pady=8)
+
+        stop_button = tk.Button(master, text='Clear', width=25, command=client.stop_launchpad, padx=3, pady=3)
+        stop_button.pack(padx=10, pady=8)
 
     
     def processIncoming (self):
@@ -36,7 +41,7 @@ class GUI:
                 msg = self.queue.get(0)
                 print (msg)
             # incase there is no elements
-            except Queue.Empty:
+            except queue.Empty:
                 pass
 
 
@@ -45,6 +50,12 @@ class ThreadedClient:
     def __init__ (self, master):
         # Start GUI and async threads
         self.active = None
+        self.launch_twitch = False
+        self.twitch_bot = None
+
+        self.twitch_message_queue = queue.Queue()
+
+
         self.master = master
         self.queue = queue.Queue()
 
@@ -54,6 +65,9 @@ class ThreadedClient:
         self.running = 1
         self.thread1 = threading.Thread(target=self.workerThread1)
         self.thread1.start()
+
+        self.thread2 = threading.Thread(target=self.workerThread2)
+        self.thread2.start()
 
         # Start up checks to see if GUI needs to do anything
         self.periodicCall()
@@ -71,30 +85,64 @@ class ThreadedClient:
     # this is where we handle async actions 
     def workerThread1(self):
         while self.running:
+
+            while self.twitch_message_queue.qsize():
+                try:
+                    msg = self.twitch_message_queue.get(0)
+                    # Drops messages when currently displaying a chat message
+                    if type(self.active).__name__ != "TwitchScroll":
+                        self.active = TwitchScroll(msg, type(self.active).__name__)
+                    print (msg)
+                # incase there is no elements
+                except queue.Empty:
+                    pass
+
             if self.active == None:
                 time.sleep(.25)
             elif self.active == 'stop':
                 self.active = None
                 unloadDisplay()
-            elif self.active == 'text':
+            elif self.active == 'TextScroll':
                 self.active = TextScroll()
-            elif self.active == 'audio':
+            elif self.active == 'LaunchpadAudio':
                 self.active = LaunchpadAudio()  
             else:
-                self.active.loop()
-    
+                if self.active.finished():
+                    self.active = self.active.finished()
+                else:
+                    self.active.loop()
+
+    def workerThread2(self):
+        while self.running:
+            if self.launch_twitch == True and self.twitch_bot == None:
+
+                self.launch_twitch = False
+                self.twitch_bot = twitch.main(self.twitch_message_queue)
+                # self.twitch_bot
+                print(self.twich_bot)
+
+            # elif self.twitch_bot == None:
+            else:
+                time.sleep(.5)
+
+            
     def set_text_scroll(self):
-        self.active = 'text'
+        self.active = 'TextScroll'
 
     def set_audio(self):
-        self.active = 'audio'
+        self.active = 'LaunchpadAudio'
 
     def stop_launchpad(self):
         self.active = 'stop'
 
+    def start_twitch(self):
+        self.launch_twitch = True
+
     def endApplication(self):
-        print ("END APPLICATION")
         self.running = 0
+        if self.twitch_bot != None:
+            self.twitch_bot.disconnect()
+            self.twitch_bot = None
 
     
 
