@@ -19,13 +19,13 @@ class GUI:
         title_label.pack(padx=10, pady=10)
 
         # init GUI
-        text_button = tk.Button(master, text='Ego Scroll', width=25, command=client.set_text_scroll, padx=4, pady=4)
+        text_button = tk.Button(master, text='Text Scroll', width=25, command=client.set_text_scroll, padx=4, pady=4)
         text_button.pack(padx=10, pady=10)
 
-        audio_button = tk.Button(master, text='Audio', width=25, command=client.set_audio, padx=4, pady=4)
+        audio_button = tk.Button(master, text='Audio Spectrogram', width=25, command=client.set_audio, padx=4, pady=4)
         audio_button.pack(padx=10, pady=10)
 
-        stop_button = tk.Button(master, text='Stop', width=25, command=client.stop_launchpad, padx=4, pady=4)
+        stop_button = tk.Button(master, text='Clear', width=25, command=client.stop_launchpad, padx=4, pady=4)
         stop_button.pack(padx=10, pady=10)
 
     
