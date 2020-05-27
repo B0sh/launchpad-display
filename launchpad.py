@@ -149,6 +149,14 @@ def generateNextColors():
             continue
         elif background == "orange" and text == "amber":
             continue
+        elif background == "orange" and text == "red":
+            continue
+        elif background == "red" and text == "orange":
+            continue
+        elif background == "red" and text == "yellow":
+            continue
+        elif background == "yellow" and text == "red":
+            continue
         elif background == COLORS['.']:
             continue
         # elif text == COLORS['x']:

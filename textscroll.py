@@ -30,8 +30,10 @@ class TextScroll:
             
         x = self.loops % 2
         if x == 0:
-            self.display = renderFont("  Walden's World  b0sh_  ")
+            self.display = renderFont("  Walden's World   ")
         elif x == 1:
+            self.display = renderFont("  twitch.tv/b0sh_   ")
+        elif x == 2:
             today = datetime.datetime.today().strftime('%A, %B %d  %I:%M %p')
             self.display = renderFont("  " + today + "  ")
 
@@ -40,33 +42,6 @@ class TextScroll:
 
 
     def loop(self):
-        # display = [
-        #     'g.g.g.g.g',
-        #     '.x.x.x.x.',
-        #     'x.x.x.x.y',
-        #     '.x.x.x.x.',
-        #     'x.x.x.x.y',
-        #     '.x.x.x.x.',
-        #     'x.x.x.x.y',
-        #     '.x.x.x.x.',
-        #     'x.x.x.x.y',
-        # ]
-
-        # display = [
-        #     '.........',
-        #     '.........',
-        #     '.........',
-        #     '.........',
-        #     '.........',
-        #     '.........',
-        #     '.........',
-        #     '.........',
-        #     'x........',
-        # ]
-
-        # rapidRenderFrameWithButton(display, 0)
-        # time.sleep(self.delay)
-
         if self.position == -1 or self.position == getLengthOfDisplay(self.display) - 8:
             self.reset()
         else:
