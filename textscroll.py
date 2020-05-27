@@ -40,6 +40,33 @@ class TextScroll:
 
 
     def loop(self):
+        # display = [
+        #     'g.g.g.g.g',
+        #     '.x.x.x.x.',
+        #     'x.x.x.x.y',
+        #     '.x.x.x.x.',
+        #     'x.x.x.x.y',
+        #     '.x.x.x.x.',
+        #     'x.x.x.x.y',
+        #     '.x.x.x.x.',
+        #     'x.x.x.x.y',
+        # ]
+
+        # display = [
+        #     '.........',
+        #     '.........',
+        #     '.........',
+        #     '.........',
+        #     '.........',
+        #     '.........',
+        #     '.........',
+        #     '.........',
+        #     'x........',
+        # ]
+
+        # rapidRenderFrameWithButton(display, 0)
+        # time.sleep(self.delay)
+
         if self.position == -1 or self.position == getLengthOfDisplay(self.display) - 8:
             self.reset()
         else:

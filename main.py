@@ -1,5 +1,5 @@
 import tkinter as tk
-from ego import *
+from textscroll import *
 from audio import *
 import time
 import threading
@@ -9,6 +9,7 @@ import queue
 import twitch
 from twitchscroll import * 
 
+launchpadAudio = LaunchpadAudio()
 # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch09s07.html
 class GUI:
     def __init__ (self, master, queue, client):
@@ -21,17 +22,26 @@ class GUI:
         title_label.pack(padx=10, pady=8)
 
         # init GUI
-        text_button = tk.Button(master, text='Text Scroll', width=25, command=client.set_text_scroll, padx=3, pady=3)
+        text_button = tk.Button(master, text='Text Scroll', width=30, command=client.set_text_scroll, padx=3, pady=3)
         text_button.pack(padx=10, pady=8)
 
-        audio_button = tk.Button(master, text='Audio Spectrogram', width=25, command=client.set_audio, padx=3, pady=3)
+        audio_button = tk.Button(master, text='Audio Spectrogram', width=30, command=client.set_audio, padx=3, pady=3)
         audio_button.pack(padx=10, pady=8)
 
-        twitch_button = tk.Button(master, text='Start Twitch', width=25, command=client.start_twitch, padx=3, pady=3)
+        twitch_button = tk.Button(master, text='Start Twitch', width=30, command=client.start_twitch, padx=3, pady=3)
         twitch_button.pack(padx=10, pady=8)
 
-        stop_button = tk.Button(master, text='Clear', width=25, command=client.stop_launchpad, padx=3, pady=3)
+        stop_button = tk.Button(master, text='Clear', width=30, command=client.stop_launchpad, padx=3, pady=3)
         stop_button.pack(padx=10, pady=8)
+
+        variable = tk.StringVar(master)
+        options = launchpadAudio.get_audio_devices().keys()
+
+        # variable.set("")
+
+        audio_option = tk.OptionMenu(master, variable, *options, command=client.set_audio_input)
+        audio_option.config(width=29)
+        audio_option.pack(padx=10, pady=8)
 
     
     def processIncoming (self):
@@ -55,9 +65,9 @@ class ThreadedClient:
 
         self.twitch_message_queue = queue.Queue()
 
-
         self.master = master
         self.queue = queue.Queue()
+        self.audio_index = 4
 
         self.gui = GUI(master, self.queue, self)
 
@@ -105,7 +115,7 @@ class ThreadedClient:
             elif self.active == 'TextScroll':
                 self.active = TextScroll()
             elif self.active == 'LaunchpadAudio':
-                self.active = LaunchpadAudio()  
+                self.active = launchpadAudio.start(self.audio_index)
             else:
                 if self.active.finished():
                     self.active = self.active.finished()
@@ -125,6 +135,10 @@ class ThreadedClient:
             else:
                 time.sleep(.5)
 
+    def set_audio_input(self, audio_name):
+        audio_index = launchpadAudio.get_audio_devices()[audio_name]
+        print("Set audio input:", audio_index, " - ", audio_name)
+        self.audio_index = audio_index
             
     def set_text_scroll(self):
         self.active = 'TextScroll'
@@ -148,7 +162,7 @@ class ThreadedClient:
 
 q = tk.Tk()
 q.title('Launchpad Display')
-q.geometry("300x240")
+q.geometry("320x280")
 
 client = ThreadedClient(q)
 

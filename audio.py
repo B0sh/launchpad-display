@@ -12,6 +12,7 @@ from transition import *
 
 class LaunchpadAudio:
     def __init__(self):
+        self.p = pyaudio.PyAudio()
 
         # https://stackoverflow.com/questions/21610198/runtimewarning-divide-by-zero-encountered-in-log
         # Disable divide by zero errors
@@ -22,24 +23,26 @@ class LaunchpadAudio:
 
         # the number of samples represented for each column
         # should be proportional to buffer size
-        self.rate8 = int(self.BUFFER / 8 / 4 )
+        self.rate9 = int(self.BUFFER / 9 / 4 )
 
         # dB levels at which each row of frequency responds
         self.levels = [
+            -20,
+            -30,
             -40,
-            -48,
-            -56,
-            -64,
-            -72,
+            -50,
+            -60,
+            -70,
             -80,
             -90,
             -100
         ]
-
+        
         # colors for each row of frequency
-        self.color_lookup = "reodaylg"
+        self.color_lookup = "reodaylgg"
 
-        self.p = pyaudio.PyAudio()
+
+    def start(self, audio_index):
         self.stream = self.p.open(
             format = pyaudio.paFloat32,
             channels = 1,
@@ -47,10 +50,24 @@ class LaunchpadAudio:
             input = True,
             output = False,
             frames_per_buffer = self.BUFFER,
-            input_device_index = 3
+            input_device_index = audio_index
         )
 
         unloadDisplay()
+
+        return self
+
+    def get_audio_devices(self):
+        info = self.p.get_host_api_info_by_index(0)
+        numdevices = info.get('deviceCount')
+        input_devices = {} 
+        for i in range(0, numdevices):
+            if (self.p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')) > 0:
+                name = self.p.get_device_info_by_host_api_device_index(0, i).get('name'); 
+                input_devices[name] = i
+                # print ("Input Device id ", i, " - ", name)
+
+        return input_devices
 
     def loop(self):
         # Calculate the data from the previous buffer
@@ -71,21 +88,21 @@ class LaunchpadAudio:
         ) * 20
         
         # init table
-        table = [""] * 8
+        table = [""] * 9
 
-        for x in range(0, 8):
+        for x in range(0, 9):
             # variable slicing cannot be done with : syntax
-            s = slice(self.rate8*x , self.rate8*(x+1))
+            s = slice(self.rate9*x , self.rate9*(x+1))
             high = max(data[s])
 
-            for y in range (0, 8):
+            for y in range (0, 9):
                 if self.levels[y] < high:
                     table[y] += self.color_lookup[x]
                 else:
                     table[y] += "."
 
         # render frame with launchpad as fast as possible
-        rapidRenderFrame(table, 0)
+        rapidRenderFrameWithButton(table, 0)
         
     def finished(self):
         return False

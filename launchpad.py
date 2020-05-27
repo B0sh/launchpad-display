@@ -224,6 +224,56 @@ def rapidRenderFrame(display, position):
 
                 last_color = -1
 
+# use the launchpad's Rapid LED Update mode
+def rapidRenderFrameWithButton(display, position):
+    frame = []
+    for line in display:
+        position = position % len(line)
+        line = line + line
+        frame.append(line[position:position + 9])
+
+    # create empty points array
+    points = []
+    for i in range(81):
+        points.append('.')
+
+    # setup the order for rapid render mode:
+    # Starting at the top-left-hand corner in either mode, subsequent note
+    # messages update the 64-pad grid horizontally and then vertically. They
+    # then update the eight clip launch buttons, and then the eight mode
+    # buttons.
+
+    for index, line in enumerate(frame):
+        if index == 0:
+            for point_index, point in enumerate(line):
+                points[point_index + 64 + 8] = point
+        else:
+            index = index - 1
+            for point_index, point in enumerate(line):
+                if point_index == 8:
+                    points[64 + index] = point
+                else:
+                    points[point_index + index * 8] = point
+
+    # send a dummy signal on channel 1 to reset midi position
+    off(15, 7)
+
+    last_color = -1
+    for point in points:
+        if point in COLORS: c = COLORS[point]
+        else:
+            c = COLORS['none']
+
+        if last_color == -1:
+            last_color = c
+        else:
+            color1 = getVelocityFromLaunchpadColor(last_color)
+            color2 = getVelocityFromLaunchpadColor(c)
+
+            message = mido.Message("note_on", note=color1, velocity=color2, channel=2)
+            port.send(message)
+
+            last_color = -1
 
 ########### SETUP ############
 
