@@ -26,18 +26,13 @@ class LaunchpadAudio:
         self.rate9 = int(self.BUFFER / 9 / 4 )
 
         # dB levels at which each row of frequency responds
-        self.levels = [
-            -20,
-            -30,
-            -40,
-            -50,
-            -60,
-            -70,
-            -80,
-            -90,
-            -100
-        ]
-        
+        self.levels = [ ]
+
+        dB = -26
+        for x in range(9):
+            self.levels.append(dB)
+            dB = dB - 9
+
         # colors for each row of frequency
         self.color_lookup = "reodaylgg"
 
@@ -102,7 +97,7 @@ class LaunchpadAudio:
                     table[y] += "."
 
         # render frame with launchpad as fast as possible
-        rapidRenderFrameWithButton(table, 0)
+        rapidRenderFrame(table, 0)
         
-    def finished(self):
+    def is_completed(self):
         return False

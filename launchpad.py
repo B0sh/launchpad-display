@@ -3,7 +3,6 @@ import time
 import signal
 import random
 
-FONT = {}
 AVAILABLE_COLORS = ['red', 'green', 'amber', 'orange', 'none']
 COLORS = {
     "x": "red",
@@ -102,6 +101,8 @@ def unloadDisplay():
 def initFont(file):
     file = open(file)
 
+    font = {}
+
     i = 0
     for line in file.readlines():
         line = line.rstrip('\n')
@@ -112,12 +113,13 @@ def initFont(file):
                 break
             char = line
             char_display = []
-            # print ("char: ", line)
         else:
             char_display.append(line)
-            FONT[char] = char_display
-            # print (line)
+            font[char] = char_display
         i += 1
+
+    return font
+
 
 
 # return an array of the display from a file
@@ -172,17 +174,21 @@ def generateNextColors():
 def renderFont(text):
     display = [''] * 8
     for char in text:
-        if char in FONT:
-            char = FONT[char]
+        if char in SCROLL_CHARACTERS:
+            char = SCROLL_CHARACTERS[char]
         # if the character doesn't exist, use !
         else:
-            char = FONT["!"]
+            char = SCROLL_CHARACTERS["!"]
 
         for x in range(0, 8):
             display[x] = display[x] + char[x]
 
     return display
 
+# get the render of a full character
+def renderCharacter(character):
+    display = FULL_CHARACTERS[character.upper()]
+    return display
 
 # send the signals to render a given display frame
 def renderFrame(display, position):
@@ -208,61 +214,40 @@ def rapidRenderFrame(display, position):
     for line in display:
         position = position % len(line)
         line = line + line
-        frame.append(line[position:position + 8])
-
-    # send a dummy signal on channel 1 to reset midi position
-    off(15, 7)
-
-    last_color = -1
-    for line in frame:
-        for x in range(0, 8):
-            if line[x] in COLORS:
-                c = COLORS[line[x]]
-            else:
-                c = COLORS['none']
-
-            if last_color == -1:
-                last_color = c
-            else:
-                color1 = getVelocityFromLaunchpadColor(last_color)
-                color2 = getVelocityFromLaunchpadColor(c)
-
-                message = mido.Message("note_on", note=color1, velocity=color2, channel=2)
-                port.send(message)
-
-                last_color = -1
-
-# use the launchpad's Rapid LED Update mode
-def rapidRenderFrameWithButton(display, position):
-    frame = []
-    for line in display:
-        position = position % len(line)
-        line = line + line
-        frame.append(line[position:position + 9])
-
-    # create empty points array
-    points = []
-    for i in range(81):
-        points.append('.')
+        frame.append(line[position:position + len(display)])
 
     # setup the order for rapid render mode:
     # Starting at the top-left-hand corner in either mode, subsequent note
     # messages update the 64-pad grid horizontally and then vertically. They
     # then update the eight clip launch buttons, and then the eight mode
     # buttons.
+    points = []
+    if len(display) == 9:
+        for i in range(81):
+            points.append('.')
 
-    for index, line in enumerate(frame):
-        if index == 0:
-            for point_index, point in enumerate(line):
-                points[point_index + 64 + 8] = point
-        else:
-            index = index - 1
-            for point_index, point in enumerate(line):
-                if point_index == 8:
-                    points[64 + index] = point
-                else:
-                    points[point_index + index * 8] = point
+        for index, line in enumerate(frame):
+            if index == 0:
+                for point_index, point in enumerate(line):
+                    points[point_index + 64 + 8] = point
+            else:
+                index = index - 1
+                for point_index, point in enumerate(line):
+                    if point_index == 8:
+                        points[64 + index] = point
+                    else:
+                        points[point_index + index * 8] = point
 
+    # If there are no buttons to render add all sequentially
+    else:
+        for line in frame:
+            for point in line:
+                points.append(point)
+
+    sendRapidFrame(points)
+
+
+def sendRapidFrame(points):
     # send a dummy signal on channel 1 to reset midi position
     off(15, 7)
 
@@ -296,7 +281,9 @@ if device_name == False:
     exit()
 
 port = mido.open_output(device_name)
-initFont("characters.txt")
+
+SCROLL_CHARACTERS = initFont("characters-scroll.txt")
+FULL_CHARACTERS = initFont("characters-full.txt")
 
 unloadDisplay()
 
