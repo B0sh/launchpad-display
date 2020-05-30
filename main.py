@@ -7,12 +7,14 @@ import sys
 import random
 import queue
 import twitch
+from twitchbot import TwitchBot
 from twitchscroll import * 
 
 launchpadAudio = LaunchpadAudio()
 # https://www.oreilly.com/library/view/python-cookbook/0596001673/ch09s07.html
 class GUI:
     def __init__ (self, master, queue, client):
+        self.client = client
         self.queue = queue
         
         master.configure(background='#0F0020')
@@ -28,8 +30,8 @@ class GUI:
         audio_button = tk.Button(master, text='Audio Spectrogram', width=30, command=client.set_audio, padx=3, pady=3)
         audio_button.pack(padx=10, pady=8)
 
-        twitch_button = tk.Button(master, text='Start Twitch', width=30, command=client.start_twitch, padx=3, pady=3)
-        twitch_button.pack(padx=10, pady=8)
+        self.twitch_button = tk.Button(master, text='Start Twitch', width=30, command=self.toggle_twitch, padx=3, pady=3)
+        self.twitch_button.pack(padx=10, pady=8)
 
         stop_button = tk.Button(master, text='Clear', width=30, command=client.stop_launchpad, padx=3, pady=3)
         stop_button.pack(padx=10, pady=8)
@@ -43,6 +45,13 @@ class GUI:
         audio_option.config(width=29)
         audio_option.pack(padx=10, pady=8)
 
+    def toggle_twitch(self):
+        if self.twitch_button['text'] == 'Start Twitch':
+            self.twitch_button.configure(text='Stop Twitch')
+            self.client.start_twitch() 
+        else:
+            self.twitch_button.configure(text='Start Twitch')
+            self.client.stop_twitch()
     
     def processIncoming (self):
         # handle all messages in the queue, if any
@@ -94,15 +103,18 @@ class ThreadedClient:
 
     # this is where we handle async actions 
     def workerThread1(self):
+        previous_active = None
+
         while self.running:
 
             while self.twitch_message_queue.qsize():
                 try:
                     msg = self.twitch_message_queue.get(0)
+
                     # Drops messages when currently displaying a chat message
                     if type(self.active).__name__ != "TwitchScroll":
-                        self.active = TwitchScroll(msg, type(self.active).__name__)
-                    print (msg)
+                        previous_active = type(self.active).__name__
+                        self.active = TwitchScroll(msg)
                 # incase there is no elements
                 except queue.Empty:
                     pass
@@ -116,22 +128,20 @@ class ThreadedClient:
                 self.active = TextScroll()
             elif self.active == 'LaunchpadAudio':
                 self.active = launchpadAudio.start(self.audio_index)
-            else:
-                if self.active.finished():
-                    self.active = self.active.finished()
+            elif self.active.is_completed():
+                if previous_active == None:
+                    self.active = None
                 else:
-                    self.active.loop()
+                    self.active = previous_active
+                    previous_active = None
+            else:
+                self.active.loop()
 
     def workerThread2(self):
         while self.running:
             if self.launch_twitch == True and self.twitch_bot == None:
-
                 self.launch_twitch = False
-                self.twitch_bot = twitch.main(self.twitch_message_queue)
-                # self.twitch_bot
-                print(self.twich_bot)
-
-            # elif self.twitch_bot == None:
+                self.twitch_bot = TwitchBot(self.twitch_message_queue)
             else:
                 time.sleep(.5)
 
@@ -152,11 +162,15 @@ class ThreadedClient:
     def start_twitch(self):
         self.launch_twitch = True
 
+    def stop_twitch(self):
+        # delete twitch bot object instance so that it disconnects from irc
+        self.twitch_bot = None
+        self.launch_twitch = False
+
     def endApplication(self):
         self.running = 0
-        if self.twitch_bot != None:
-            self.twitch_bot.disconnect()
-            self.twitch_bot = None
+        self.twitch_bot = None
+        unloadDisplay()
 
     
 
